@@ -1,23 +1,25 @@
+let bgm, sfxShoot, sfxExplosion, sfxHit, sfxGameover
 let player
 let scoreEl, livesEl, finalScoreEl, highscoreEl
 let score = 0
 let lives = 3
 let gameRunning = false
-
 let fireballs = []
 let bullets = []
 let enemyBullets = []
-
 let fireballSpawnRate = 800
 let lastSpawn = 0
-
 let baseSpeed = 4
 let difficulty = 1
 let lastDifficultyIncrease = 0
-
 let highscore = 0
 
 window.onload = () => {
+  bgm = document.getElementById('bgm')
+  sfxShoot = document.getElementById('sfx-shoot')
+  sfxExplosion = document.getElementById('sfx-explosion')
+  sfxHit = document.getElementById('sfx-hit')
+  sfxGameover = document.getElementById('sfx-gameover')
   player = document.getElementById('player')
   scoreEl = document.getElementById('score-value')
   livesEl = document.getElementById('lives-value')
@@ -27,51 +29,47 @@ window.onload = () => {
   highscore = localStorage.getItem('pyroclastia-highscore') || 0
   highscoreEl.textContent = highscore
 
-  // Buttons
   document.getElementById('start-btn').onclick = startGame
   document.getElementById('restart-btn').onclick = startGame
 
-  // Controls
   document.addEventListener('mousemove', movePlayer)
   document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && gameRunning) shoot()
   })
 
-  // 🔥 NEW: Proper initial state
   document.getElementById('start-screen').style.display = 'flex'
   document.getElementById('game-over').style.display = 'none'
 }
 
-
 function startGame() {
+  bgm.currentTime = 0
+  bgm.volume = 0.4
+  bgm.play()
   score = 0
   lives = 3
   difficulty = 1
   baseSpeed = 4
   fireballSpawnRate = 800
-
   fireballs.forEach(fb => fb.remove())
   bullets.forEach(b => b.remove())
   enemyBullets.forEach(eb => eb.remove())
   fireballs = []
   bullets = []
   enemyBullets = []
-
   scoreEl.textContent = score
   livesEl.textContent = lives
-
   gameRunning = true
   lastSpawn = Date.now()
   lastDifficultyIncrease = Date.now()
 
   document.getElementById('start-screen').style.display = 'none'
   document.getElementById('game-over').style.display = 'none'
-
   gameLoop()
 }
 
 function movePlayer(e) {
   if (!gameRunning) return
+  
   let x = e.clientX - 20
   player.style.left = `${x}px`
 }
@@ -85,23 +83,23 @@ function spawnFireball() {
 
   fb.style.left = Math.random() * (window.innerWidth - 40) + 'px'
   fb.style.top = '-40px'
-
   fb.dataset.speed = baseSpeed + Math.random() * 2
   fb.dataset.angle = Math.random() * Math.PI * 2
   fb.dataset.lastShot = Date.now().toString()
-
   document.getElementById('fireballs').appendChild(fb)
   fireballs.push(fb)
 }
 
 function shoot() {
+  sfxShoot.currentTime = 0
+  sfxShoot.play()
+
   const bullet = document.createElement('div')
   bullet.classList.add('bullet')
 
   const rect = player.getBoundingClientRect()
   bullet.style.left = rect.left + rect.width / 2 - 3 + 'px'
   bullet.style.top = rect.top - 20 + 'px'
-
   document.getElementById('bullets').appendChild(bullet)
   bullets.push(bullet)
 }
@@ -111,13 +109,10 @@ function spawnEnemyBullet(x, y, angle, speed) {
   eb.classList.add('bullet')
   eb.style.background = '#ff4444'
   eb.style.boxShadow = '0 0 8px #ff4444'
-
   eb.style.left = x + 'px'
   eb.style.top = y + 'px'
-
   eb.dataset.angle = angle
   eb.dataset.speed = speed
-
   document.getElementById('bullets').appendChild(eb)
   enemyBullets.push(eb)
 }
@@ -126,20 +121,22 @@ function enemyShoot(fb) {
   const now = Date.now()
   const lastShot = parseInt(fb.dataset.lastShot || '0', 10)
   const cooldown = 800 - Math.min(500, difficulty * 40)
+
   if (now - lastShot < cooldown) return
 
   const fireChance = 0.004 * difficulty 
+  
   if (Math.random() > fireChance) return
 
   fb.dataset.lastShot = now.toString()
 
   const x = fb.offsetLeft + 15
   const y = fb.offsetTop + 20
-
   const patternRoll = Math.random()
 
   if (patternRoll < 0.5) {
     const count = 2 + Math.floor(Math.random() * 2)
+
     for (let i = 0; i < count; i++) {
       const angle = (Math.random() * Math.PI) + Math.PI / 2
       const speed = 6 + Math.random() * (4 + difficulty)
@@ -148,6 +145,7 @@ function enemyShoot(fb) {
   } else if (patternRoll < 0.8) {
     const count = 3 + Math.floor(Math.random() * 3)
     const baseAngle = Math.PI / 2 + (Math.random() - 0.5) * 0.4
+
     for (let i = 0; i < count; i++) {
       const angle = baseAngle + (Math.random() - 0.5) * 0.3
       const speed = 7 + Math.random() * (5 + difficulty)
@@ -155,8 +153,9 @@ function enemyShoot(fb) {
     }
   } else {
     const count = 5 + Math.floor(Math.random() * 4)
-    const spread = 0.9 // radians
+    const spread = 0.9
     const startAngle = Math.PI / 2 - spread / 2
+
     for (let i = 0; i < count; i++) {
       const angle = startAngle + (spread / (count - 1)) * i + (Math.random() - 0.5) * 0.2
       const speed = 5 + Math.random() * (6 + difficulty)
@@ -224,6 +223,8 @@ function updateFireballs() {
 
     if (isColliding(player, fb)) {
       lives--
+      sfxHit.currentTime = 0
+      sfxHit.play()
       livesEl.textContent = lives
       screenShake()
       explosion(x, y)
@@ -260,6 +261,7 @@ function updateBullets() {
 
     for (let j = fireballs.length - 1; j >= 0; j--) {
       const fb = fireballs[j]
+
       if (isColliding(b, fb)) {
         explosion(fb.offsetLeft, fb.offsetTop)
 
@@ -294,6 +296,8 @@ function updateEnemyBullets() {
 
     if (isColliding(player, eb)) {
       lives--
+      sfxHit.currentTime = 0
+      sfxHit.play()
       livesEl.textContent = lives
       screenShake()
       explosion(x, y)
@@ -334,6 +338,9 @@ function screenShake() {
 }
 
 function explosion(x, y) {
+  sfxExplosion.currentTime = 0
+  sfxExplosion.play()
+
   const boom = document.createElement('div')
   boom.style.position = 'absolute'
   boom.style.left = x + 'px'
@@ -359,6 +366,10 @@ function explosion(x, y) {
 }
 
 function endGame() {
+  bgm.pause()
+  sfxGameover.currentTime = 0
+  sfxGameover.play()
+
   if (!gameRunning) return
   gameRunning = false
 

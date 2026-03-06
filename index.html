@@ -9,32 +9,32 @@
 </head>
 <body>
   <div id="crt"></div>
-  
   <div id="game-container">
     <div id="hud">
       <div id="score">SCORE: <span id="score-value">0</span></div>
       <div id="lives">LIVES: <span id="lives-value">3</span></div>
       <div id="highscore">HIGH SCORE: <span id="highscore-value">0</span></div>
     </div>
-  
     <div id="player"></div>
-  
     <div id="fireballs"></div>
     <div id="bullets"></div>
-  
     <div id="start-screen">
       <h1>Pyroclastia</h1>
       <p class="insert-coin">INSERT COIN</p>
       <button id="start-btn">START</button>
     </div>
-  
     <div id="game-over">
-      <h2>Pyroclastia Ends You</h2>
+      <h2>Pyroclastia Ends You!!!</h2>
       <p>Your Score: <span id="final-score"></span></p>
       <button id="restart-btn">PLAY AGAIN</button>
     </div>
   </div>
-  
+  <audio id="bgm" src="audio/bgm.Wav" loop></audio>
+  <audio id="sfx-shoot" src="audio/shoot.mp3"></audio>
+  <audio id="sfx-explosion" src="audio/explosion.wav"></audio>
+  <audio id="sfx-hit" src="audio/hit.mp3"></audio>
+  <audio id="sfx-gameover" src="audio/gameover.mp3"></audio>
+
   <script src="game.js"></script>
 </body>
 </html>
