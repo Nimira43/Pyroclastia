@@ -27,14 +27,21 @@ window.onload = () => {
   highscore = localStorage.getItem('pyroclastia-highscore') || 0
   highscoreEl.textContent = highscore
 
+  // Buttons
   document.getElementById('start-btn').onclick = startGame
   document.getElementById('restart-btn').onclick = startGame
 
+  // Controls
   document.addEventListener('mousemove', movePlayer)
   document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && gameRunning) shoot()
   })
+
+  // 🔥 NEW: Proper initial state
+  document.getElementById('start-screen').style.display = 'flex'
+  document.getElementById('game-over').style.display = 'none'
 }
+
 
 function startGame() {
   score = 0
